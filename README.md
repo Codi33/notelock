@@ -5,6 +5,12 @@ NoteLock is a lightweight, secure FastAPI service designed for creating and read
 - Encryption
 - Automatically deleted after being read
 
+## Getting started
+- Create config file
+```bash
+cp .env.example .env
+```
+
 ## Running Locally
 - Clone the repository
 ```bash
