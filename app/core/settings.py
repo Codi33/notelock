@@ -7,7 +7,7 @@ env_file_path = Path.cwd() / ".env"
 class Settings(BaseSettings):
     mongodb_url: str
 
-    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
+    model_config = SettingsConfigDict(env_file=env_file_path, case_sensitive=False)
 
 
 settings = Settings()
