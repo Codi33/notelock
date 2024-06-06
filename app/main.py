@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, BackgroundTasks
 
 from app.core.db import engine
 from app.schemas.note import (
@@ -9,6 +9,7 @@ from app.schemas.note import (
 from app.models.note import NoteOrm
 
 from app.helpers.crypto import encrypt_and_compress, decrypt_and_decompress
+from app.helpers.auto_deletion import autodelete_job
 
 from bson import ObjectId
 from bson.errors import InvalidId
@@ -24,13 +25,16 @@ async def create_note(note_input: NoteCreateSchema):
 
 
 @app.get("/get/{note_id}", response_model=NoteReadSchema)
-async def get_note(note_id: str, password: str):
+async def get_note(note_id: str, password: str, background_tasks: BackgroundTasks):
     try:
         note = await engine.find_one(NoteOrm, {"_id": ObjectId(note_id)})
         if note is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"note {note_id} not found")
     
         content = decrypt_and_decompress(note.content, password)
+
+        background_tasks.add_task(autodelete_job, note_id)
+
         return {"content": content}
     except InvalidId:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="bad id")
